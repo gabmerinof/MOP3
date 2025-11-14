@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 
-export interface IController {
+export default interface IController {
     registerRoutes(app: FastifyInstance): void;
     getPath(): string;
 }

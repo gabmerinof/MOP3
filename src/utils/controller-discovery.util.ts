@@ -1,7 +1,6 @@
 import { glob } from 'glob';
 import path from 'path';
-import { IController } from '../controllers/Interfaces/IController';
-
+import IController from '../controllers/Interfaces/IController';
 export class ControllerDiscovery {
 
     static async discoverControllers(pattern: string = '**/*.controller.ts'): Promise<{ new(...args: any[]): IController }[]> {

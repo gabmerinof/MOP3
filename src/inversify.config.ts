@@ -1,8 +1,7 @@
 import { Container } from "inversify";
-import { IController } from "./controllers/Interfaces/IController";
+import IController from "./controllers/Interfaces/IController";
 import { ControllerDiscovery } from "./utils/controller-discovery.util";
-
-export class ContainerConfig {
+export default class ContainerConfig {
     private container: Container;
     private controllerClasses: (new (...args: any[]) => IController)[] = [];
 

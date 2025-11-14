@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { createErrorResponse, createSuccessResponse } from '../types/ApiResponse';
 
-export function responseFormatter(payload: any, request: FastifyRequest, reply: FastifyReply) {
+export default function responseFormatter(payload: any, request: FastifyRequest, reply: FastifyReply) {
     const contentType = reply.getHeader('content-type') as string;
     try {
         if (contentType && String(payload) !== '[object Object]' && contentType.indexOf('application/json') > -1) {

@@ -8,9 +8,9 @@ import ajvErrors from 'ajv-errors';
 import fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import disableCache from 'fastify-disablecache';
 import { DatabaseMikro } from './config/database';
-import { IController } from './controllers/Interfaces/IController';
-import { ContainerConfig } from './inversify.config';
-import { responseFormatter } from './middleware/responseFormater';
+import IController from './controllers/Interfaces/IController';
+import ContainerConfig from './inversify.config';
+import responseFormatter from './middleware/responseFormater';
 
 const API_PREFIX = '/api';
 const app = fastify({

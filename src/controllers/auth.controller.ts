@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { inject, injectable } from 'inversify';
 import { validateLoginSchema, validateRegisterSchema } from '../middleware/validation';
 import { AuthService, LoginData, RegisterData } from '../services/auth.service';
-import { IController } from './Interfaces/IController';
+import IController from './Interfaces/IController';
 
 @injectable('Request')
 export default class AuthController implements IController {

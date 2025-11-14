@@ -6,7 +6,7 @@ import { auth } from '../middleware/auth';
 import { validateGeoPointSchema, validateProximityFilterSchema } from '../middleware/validation';
 import { GeoPointService, UpdatePointData } from '../services/geo-point.service';
 import { AppError } from '../utils/AppError';
-import { IController } from './Interfaces/IController';
+import IController from './Interfaces/IController';
 
 @injectable('Request')
 export default class GeoPointController implements IController {
