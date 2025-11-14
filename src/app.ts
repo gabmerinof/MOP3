@@ -106,6 +106,7 @@ const startServer = async () => {
         const containerConfig = new ContainerConfig();
         await containerConfig.configure();
         const controllers = containerConfig.getAllControllers();
+        controllers.forEach((controller: IController) => app.register((app) => controller.registerRoutes(app), { prefix: `${API_PREFIX}${controller.getPath()}` }));
 
         app.addHook('onRequest', (request: FastifyRequest, reply: FastifyReply, done) => {
             RequestContext.create(DatabaseMikro.getServices()!.em, done);
@@ -114,8 +115,6 @@ const startServer = async () => {
         app.addHook('onClose', async () => {
             await DatabaseMikro.getServices()!.orm.close();
         });
-
-        controllers.forEach((controller: IController) => app.register((app) => controller.registerRoutes(app), { prefix: `${API_PREFIX}${controller.getPath()}` }));
 
         app.setErrorHandler(async (error: any, request, reply) => {
             if (error.statusCode === 429) {

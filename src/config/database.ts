@@ -19,11 +19,13 @@ class DatabaseMikro {
     }
 
     static getServices() {
+
         return DatabaseMikro.servicesCache;
     }
 
-    static getRepository<T>(ent: T) {
-        return DatabaseMikro.servicesCache?.em.getRepository(ent as EntityName<object>);
+    static getRepository<T extends EntityName<object>>(ent: T) {
+
+        return RequestContext.getEntityManager()?.getRepository(ent)
     }
 }
 
