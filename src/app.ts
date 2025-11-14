@@ -11,6 +11,8 @@ import { IController } from './controllers/Interfaces/IController';
 import { ContainerConfig } from './inversify.config';
 import { responseFormatter } from './middleware/responseFormater';
 import ajvErrors from 'ajv-errors';
+import SwaggerUI from '@fastify/swagger-ui'
+import Swagger, { type FastifyDynamicSwaggerOptions } from '@fastify/swagger'
 
 const API_PREFIX = '/api';
 const app = fastify({
@@ -32,23 +34,6 @@ const app = fastify({
 
 const startServer = async () => {
     try {
-        await app.register(import('@fastify/swagger'))
-        await app.register(import('@fastify/swagger-ui'), {
-            routePrefix: '/documentation',
-            uiConfig: {
-                docExpansion: 'full',
-                deepLinking: false
-            },
-            uiHooks: {
-                onRequest: function (request, reply, next) { next() },
-                preHandler: function (request, reply, next) { next() }
-            },
-            staticCSP: true,
-            transformStaticCSP: (header) => header,
-            transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
-            transformSpecificationClone: true
-        })
-
         await app.register(disableCache);
         await app.register(helmet);
         await app.register(compress, { encodings: ['deflate', 'gzip'], inflateIfDeflated: true });
@@ -56,19 +41,6 @@ const startServer = async () => {
         await app.register(rateLimit, {
             max: 100,
             timeWindow: '15 minutes'
-        });
-
-        app.get('/', (request: FastifyRequest, reply: FastifyReply) => {
-            reply.code(200).send({ message: 'Sistema de gestión de tráfico georeferencial' });
-        });
-
-        app.get('/health', (request: FastifyRequest, reply: FastifyReply) => {
-            reply.code(200).send({
-                status: 'OK',
-                service: 'Traffic Geo API',
-                version: '1.0.0',
-                timestamp: new Date().toISOString()
-            });
         });
 
         app.addContentTypeParser(
@@ -98,10 +70,52 @@ const startServer = async () => {
                 return;
             }
 
-            done(null, response);
+            done(null, payload);
         });
 
         await DatabaseMikro.Initialize();
+
+        const port = parseInt(process.env['PORT'] ?? '0');
+        await app.register(Swagger, {
+            openapi: {
+                info: {
+                    title: 'Favmov',
+                    description: 'API Endpoints for favmov',
+                    version: '0.1.0',
+                },
+                servers: [
+                    {
+                        url: `http://0.0.0.0:${port}`,
+                    },
+                ],
+                components: {
+                    securitySchemes: {
+                        bearerAuth: {
+                            type: 'http',
+                            scheme: 'bearer',
+                            bearerFormat: 'JWT',
+                        },
+                    },
+                },
+            },
+        });
+
+        await app.register(SwaggerUI, {
+            routePrefix: '/documentation'
+        })
+
+        app.get('/', (request: FastifyRequest, reply: FastifyReply) => {
+            reply.code(200).send({ message: 'Sistema de gestión de tráfico georeferencial' });
+        });
+
+        app.get('/health', (request: FastifyRequest, reply: FastifyReply) => {
+            reply.code(200).send({
+                status: 'OK',
+                service: 'Traffic Geo API',
+                version: '1.0.0',
+                timestamp: new Date().toISOString()
+            });
+        });
 
         const containerConfig = new ContainerConfig();
         await containerConfig.configure();
@@ -144,7 +158,6 @@ const startServer = async () => {
             secret: process.env["JWT_SECRET"] ?? 'a1b2c3d4e5f67890abcdef1234567890',
         });
 
-        const port = parseInt(process.env['PORT'] ?? '0');
         app.listen({
             port: port,
             host: '0.0.0.0'

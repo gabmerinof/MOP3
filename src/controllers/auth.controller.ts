@@ -7,7 +7,7 @@ import { IController } from './Interfaces/IController';
 @injectable('Request')
 export default class AuthController implements IController {
 
-  constructor(@inject(AuthService) private authService: AuthService) {}
+  constructor(@inject(AuthService) private authService: AuthService) { }
 
   getPath(): string {
     return "/auth";
@@ -27,6 +27,7 @@ export default class AuthController implements IController {
 
   private async register(req: FastifyRequest, reply: FastifyReply) {
     const user = await this.authService.register(req.body as RegisterData);
+
     return reply.status(201).send({
       ...user!.toJSON()
     });
