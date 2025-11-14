@@ -33,22 +33,25 @@ const app = fastify({
 
 const startServer = async () => {
     try {
-        await app.register(import('@fastify/swagger'))
-        await app.register(import('@fastify/swagger-ui'), {
-            routePrefix: '/documentation',
-            uiConfig: {
-                docExpansion: 'full',
-                deepLinking: false
-            },
-            uiHooks: {
-                onRequest: function (request, reply, next) { next() },
-                preHandler: function (request, reply, next) { next() }
-            },
-            staticCSP: true,
-            transformStaticCSP: (header) => header,
-            transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
-            transformSpecificationClone: true
-        })
+        const isDevelopment = process.env["NODE_ENV"] === 'development';
+        if (isDevelopment) {
+            await app.register(import('@fastify/swagger'))
+            await app.register(import('@fastify/swagger-ui'), {
+                routePrefix: '/documentation',
+                uiConfig: {
+                    docExpansion: 'full',
+                    deepLinking: false
+                },
+                uiHooks: {
+                    onRequest: function (request, reply, next) { next() },
+                    preHandler: function (request, reply, next) { next() }
+                },
+                staticCSP: true,
+                transformStaticCSP: (header) => header,
+                transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
+                transformSpecificationClone: true
+            })
+        }
 
         await app.register(disableCache);
         await app.register(helmet);
@@ -121,7 +124,7 @@ const startServer = async () => {
             if (error.statusCode === 429)
                 reply.status(429).send('Límite de solicitudes excedido');
 
-            reply.status(error.statusCode || 500).send(process.env["NODE_ENV"] === 'development' ? error.message : 'Algo salió mal');
+            reply.status(error.statusCode || 500).send(isDevelopment ? error.message : 'Algo salió mal');
         });
 
         app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) => {
