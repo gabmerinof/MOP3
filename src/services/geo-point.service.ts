@@ -99,7 +99,7 @@ export class GeoPointService {
 
   public getRepository(): GeoPointRepository{
   
-      return DatabaseMikro.getRepository(GeoPoint) as GeoPointRepository
+      return DatabaseMikro.getRepository(GeoPoint)
     }
 
 }

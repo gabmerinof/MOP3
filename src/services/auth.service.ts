@@ -1,9 +1,9 @@
+import { FastifyRequest } from 'fastify';
 import { injectable } from 'inversify';
 import { DatabaseMikro } from '../config/database';
 import { User } from '../entities/user.entity';
 import { AppError } from '../utils/AppError';
 import { UserRepository } from './../repositories/user.repository';
-import { FastifyInstance, FastifyRequest } from 'fastify';
 
 export interface LoginData {
   username: string;
@@ -70,6 +70,6 @@ export class AuthService {
 
   public getRepository(): UserRepository{
 
-    return DatabaseMikro.getRepository(User) as UserRepository;
+    return DatabaseMikro.getRepository(User);
   }
 }
