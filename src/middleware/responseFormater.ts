@@ -7,13 +7,9 @@ export function responseFormatter(payload: any, request: FastifyRequest, reply: 
 
     if (!payload)
         return
-    // if (typeof payload === 'string') {
-    //     return createSuccessResponse(payload);
-    // }
     
-    console.log('2222222222222')
-    console.log(payload)
-    console.log('2222222222222')
+    if (request.url.includes('/documentation'))
+        return payload;
 
     payload = JSON.parse(payload)
     if (payload && typeof payload === 'object' && payload?.success)

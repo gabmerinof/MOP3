@@ -66,7 +66,7 @@ export default class GeoPointController implements IController {
     }
 
     const points = await this.geoPointService.findAll(filter);
-    reply.code(200).send({
+    return reply.code(200).send({
       ...points
     });
   }
@@ -76,7 +76,8 @@ export default class GeoPointController implements IController {
 
     try {
       const geoJSON = await this.geoPointService.getGeoJSOByUser(userid);
-      reply.send({
+      
+      return reply.send({
         points: geoJSON,
         count: geoJSON?.length
       });
@@ -88,7 +89,8 @@ export default class GeoPointController implements IController {
   private async getGeoJSON(req: FastifyRequest, reply: FastifyReply) {
     try {
       const geoJSON = await this.geoPointService.getGeoJSON();
-      reply.send({
+      
+      return reply.send({
         ...geoJSON
       });
     } catch (error: any) {
@@ -99,7 +101,8 @@ export default class GeoPointController implements IController {
   private async getPointById(req: FastifyRequest, reply: FastifyReply) {
     const { geoPointId } = req.params as any;
     const point = await this.geoPointService.findById(geoPointId!);
-    reply.send({
+    
+    return reply.send({
       ...point
     });
   }
@@ -133,7 +136,7 @@ export default class GeoPointController implements IController {
       user
     });
 
-    reply.status(201).send({
+    return reply.status(201).send({
       ...point
     });
   }
@@ -154,7 +157,8 @@ export default class GeoPointController implements IController {
     const userId = (req.user as any).userId;
 
     await this.geoPointService.deletePoint(geoPointId!, userId);
-    reply.send({
+    
+    return reply.send({
       message: 'Punto eliminado con éxito'
     });
   }

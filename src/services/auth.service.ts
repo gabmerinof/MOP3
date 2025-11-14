@@ -3,7 +3,7 @@ import { DatabaseMikro } from '../config/database';
 import { User } from '../entities/user.entity';
 import { AppError } from '../utils/AppError';
 import { UserRepository } from './../repositories/user.repository';
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest } from 'fastify';
 
 export interface LoginData {
   username: string;
@@ -42,7 +42,7 @@ export class AuthService {
     return user;
   }
 
-  async login(data: LoginData, app: FastifyInstance) {
+  async login(data: LoginData, req: FastifyRequest) {
     const { username, password } = data;
 
     if (!username || !password) 
@@ -56,7 +56,7 @@ export class AuthService {
     if (!isValidPassword) 
       throw new AppError('AUTH_ERROR', 'Credenciales inválidas', 401);
 
-    const token = app.jwt.sign(
+    const token = req.server.jwt.sign(
       { userId: user.userid, username: user.username },
       { expiresIn: '24h' }
     );

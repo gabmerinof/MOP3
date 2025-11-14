@@ -7,8 +7,6 @@ import { IController } from './Interfaces/IController';
 @injectable('Request')
 export default class AuthController implements IController {
 
-  private app?: FastifyInstance;
-
   constructor(@inject(AuthService) private authService: AuthService) {}
 
   getPath(): string {
@@ -25,8 +23,6 @@ export default class AuthController implements IController {
       schema: validateLoginSchema,
       handler: this.login.bind(this)
     });
-
-    this.app = app;
   }
 
   private async register(req: FastifyRequest, reply: FastifyReply) {
@@ -37,7 +33,8 @@ export default class AuthController implements IController {
   }
 
   private async login(req: FastifyRequest, reply: FastifyReply) {
-    const result = await this.authService.login(req.body as LoginData, this.app!);
+    const result = await this.authService.login(req.body as LoginData, req);
+
     return ({
       ...result
     });

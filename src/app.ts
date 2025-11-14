@@ -51,7 +51,7 @@ const startServer = async () => {
 
         await app.register(disableCache);
         await app.register(helmet);
-        // await app.register(compress,  { encodings: ['deflate', 'gzip'] });
+        await app.register(compress, { encodings: ['deflate', 'gzip'], inflateIfDeflated: true });
         await app.register(cors, { origin: true });
         await app.register(rateLimit, {
             max: 100,
@@ -59,11 +59,11 @@ const startServer = async () => {
         });
 
         app.get('/', (request: FastifyRequest, reply: FastifyReply) => {
-            return reply.code(200).send({ message: 'Sistema de gestión de tráfico georeferencial' });
+            reply.code(200).send({ message: 'Sistema de gestión de tráfico georeferencial' });
         });
 
         app.get('/health', (request: FastifyRequest, reply: FastifyReply) => {
-            return reply.code(200).send({
+            reply.code(200).send({
                 status: 'OK',
                 service: 'Traffic Geo API',
                 version: '1.0.0',
@@ -91,8 +91,14 @@ const startServer = async () => {
 
         app.addHook('onSend', (request: FastifyRequest, reply: FastifyReply, payload, done) => {
             const response = responseFormatter(payload, request, reply);
-            reply.headers({ 'content-type': 'application/json' })
-            done(null, JSON.stringify(response));
+
+            if (typeof response === 'object') {
+                reply.headers({ 'content-type': 'application/json' })
+                done(null, JSON.stringify(response));
+                return;
+            }
+
+            done(null, response);
         });
 
         await DatabaseMikro.Initialize();
@@ -112,8 +118,6 @@ const startServer = async () => {
         controllers.forEach((controller: IController) => app.register((app) => controller.registerRoutes(app), { prefix: `${API_PREFIX}${controller.getPath()}` }));
 
         app.setErrorHandler(async (error: any, request, reply) => {
-            console.log('22222222222')
-            console.log(error);
             if (error.statusCode === 429) {
                 return reply.status(429).send({
                     success: false,
@@ -155,6 +159,14 @@ const startServer = async () => {
             console.log(`Documentación disponible en http://localhost:${port}/health`);
             console.log(`Documentación disponible en http://localhost:${port}/documentation`);
         });
+
+        const listeners = ['SIGINT', 'SIGTERM']
+        listeners.forEach((signal) => {
+            process.on(signal, async () => {
+                await app.close()
+                process.exit(0)
+            })
+        })
     } catch (error) {
         console.error('Error al iniciar el servidor:', error);
         process.exit(1);
