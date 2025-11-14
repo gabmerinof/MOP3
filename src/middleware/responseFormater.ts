@@ -6,7 +6,6 @@ export function responseFormatter(payload: any, request: FastifyRequest, reply: 
         return payload;
 
     const contentType = reply.getHeader('content-type') as string;
-    console.log(contentType)
     try {
         if (contentType && String(payload) !== '[object Object]' && contentType.indexOf('application/json') > -1) {
             const responseData = JSON.parse(String(payload));
