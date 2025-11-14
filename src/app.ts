@@ -3,16 +3,16 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import fastifyJwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
+import Swagger from '@fastify/swagger';
+import SwaggerUI from '@fastify/swagger-ui';
 import { RequestContext } from '@mikro-orm/postgresql';
+import ajvErrors from 'ajv-errors';
 import fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import disableCache from 'fastify-disablecache';
 import { DatabaseMikro } from './config/database';
 import { IController } from './controllers/Interfaces/IController';
 import { ContainerConfig } from './inversify.config';
 import { responseFormatter } from './middleware/responseFormater';
-import ajvErrors from 'ajv-errors';
-import SwaggerUI from '@fastify/swagger-ui'
-import Swagger, { type FastifyDynamicSwaggerOptions } from '@fastify/swagger'
 
 const API_PREFIX = '/api';
 const app = fastify({
@@ -62,15 +62,10 @@ const startServer = async () => {
         );
 
         app.addHook('onSend', (request: FastifyRequest, reply: FastifyReply, payload, done) => {
-            const response = responseFormatter(payload, request, reply);
+            if (reply.statusCode >= 400)
+                reply.headers({ 'content-type': 'application/json' });
 
-            if (typeof response === 'object') {
-                reply.headers({ 'content-type': 'application/json' })
-                done(null, JSON.stringify(response));
-                return;
-            }
-
-            done(null, payload);
+            done(null, responseFormatter(payload, request, reply));
         });
 
         await DatabaseMikro.Initialize();

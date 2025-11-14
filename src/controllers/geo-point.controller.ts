@@ -66,9 +66,10 @@ export default class GeoPointController implements IController {
     }
 
     const points = await this.geoPointService.findAll(filter);
-    return reply.code(200).send({
-      ...points
-    });
+    return reply.send({
+        points: points,
+        count: points?.length
+      });
   }
 
   private async getUserPoints(req: FastifyRequest, reply: FastifyReply) {
