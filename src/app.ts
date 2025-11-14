@@ -3,8 +3,6 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import fastifyJwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
-import Swagger from '@fastify/swagger';
-import SwaggerUI from '@fastify/swagger-ui';
 import { RequestContext } from '@mikro-orm/postgresql';
 import ajvErrors from 'ajv-errors';
 import fastify, { FastifyReply, FastifyRequest } from 'fastify';
@@ -32,8 +30,26 @@ const app = fastify({
     requestTimeout: 30000 // 30 segundos
 });
 
+
 const startServer = async () => {
     try {
+        await app.register(import('@fastify/swagger'))
+        await app.register(import('@fastify/swagger-ui'), {
+            routePrefix: '/documentation',
+            uiConfig: {
+                docExpansion: 'full',
+                deepLinking: false
+            },
+            uiHooks: {
+                onRequest: function (request, reply, next) { next() },
+                preHandler: function (request, reply, next) { next() }
+            },
+            staticCSP: true,
+            transformStaticCSP: (header) => header,
+            transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
+            transformSpecificationClone: true
+        })
+
         await app.register(disableCache);
         await app.register(helmet);
         await app.register(compress, { encodings: ['deflate', 'gzip'], inflateIfDeflated: true });
@@ -62,6 +78,11 @@ const startServer = async () => {
         );
 
         app.addHook('onSend', (request: FastifyRequest, reply: FastifyReply, payload, done) => {
+            if (request.url.includes('/documentation')) {
+                done(null, payload);
+                return;
+            }
+
             if (reply.statusCode >= 400)
                 reply.headers({ 'content-type': 'application/json' });
 
@@ -70,37 +91,8 @@ const startServer = async () => {
 
         await DatabaseMikro.Initialize();
 
-        const port = parseInt(process.env['PORT'] ?? '0');
-        await app.register(Swagger, {
-            openapi: {
-                info: {
-                    title: 'Favmov',
-                    description: 'API Endpoints for favmov',
-                    version: '0.1.0',
-                },
-                servers: [
-                    {
-                        url: `http://0.0.0.0:${port}`,
-                    },
-                ],
-                components: {
-                    securitySchemes: {
-                        bearerAuth: {
-                            type: 'http',
-                            scheme: 'bearer',
-                            bearerFormat: 'JWT',
-                        },
-                    },
-                },
-            },
-        });
-
-        await app.register(SwaggerUI, {
-            routePrefix: '/documentation'
-        })
-
         app.get('/', (request: FastifyRequest, reply: FastifyReply) => {
-            reply.code(200).send({ message: 'Sistema de gestión de tráfico georeferencial' });
+            reply.code(200).send('Sistema de gestión de tráfico georeferencial');
         });
 
         app.get('/health', (request: FastifyRequest, reply: FastifyReply) => {
@@ -140,6 +132,7 @@ const startServer = async () => {
             secret: process.env["JWT_SECRET"] ?? 'a1b2c3d4e5f67890abcdef1234567890',
         });
 
+        const port = parseInt(process.env['PORT'] ?? '0');
         app.listen({
             port: port,
             host: '0.0.0.0'
@@ -161,6 +154,9 @@ const startServer = async () => {
                 process.exit(0)
             })
         })
+
+        await app.ready();
+        app.swagger();
     } catch (error) {
         console.error('Error al iniciar el servidor:', error);
         process.exit(1);
