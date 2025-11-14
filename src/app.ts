@@ -154,9 +154,6 @@ const startServer = async () => {
                 process.exit(0)
             })
         })
-
-        await app.ready();
-        app.swagger();
     } catch (error) {
         console.error('Error al iniciar el servidor:', error);
         process.exit(1);
