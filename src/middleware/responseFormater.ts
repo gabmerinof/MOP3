@@ -6,12 +6,12 @@ export function responseFormatter(payload: any, request: FastifyRequest, reply: 
         return payload;
 
     const contentType = reply.getHeader('content-type') as string;
-    console.log(contentType);
+    console.log(contentType)
     try {
         if (contentType && String(payload) !== '[object Object]' && contentType.indexOf('application/json') > -1) {
             const responseData = JSON.parse(String(payload));
 
-            if (reply.statusCode >= 400) 
+            if (reply.statusCode >= 400)
                 return createErrorResponse('ERROR', responseData);
 
             if (responseData && typeof responseData === 'object' && !responseData?.success)
@@ -19,5 +19,5 @@ export function responseFormatter(payload: any, request: FastifyRequest, reply: 
         }
     } catch (e) { }
 
-    return JSON.stringify(createSuccessResponse(payload));
+    return JSON.stringify(reply.statusCode >= 400 ? createErrorResponse('ERROR', payload) : createSuccessResponse(payload));
 }

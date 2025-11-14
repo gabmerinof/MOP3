@@ -125,28 +125,15 @@ const startServer = async () => {
             await DatabaseMikro.getServices()!.orm.close();
         });
 
-        app.setErrorHandler(async (error: any, request, reply) => {
-            if (error.statusCode === 429) {
-                return reply.status(429).send({
-                    success: false,
-                    error: 'Too Many Requests',
-                    message: 'Límite de solicitudes excedido'
-                });
-            }
+        app.setErrorHandler((error: any, request, reply) => {
+            if (error.statusCode === 429)
+                reply.status(429).send('Límite de solicitudes excedido');
 
-            return reply.status(error.statusCode || 500).send({
-                success: false,
-                error: 'Internal Server Error',
-                message: process.env["NODE_ENV"] === 'development' ? error.message : 'Algo salió mal'
-            });
+            reply.status(error.statusCode || 500).send(process.env["NODE_ENV"] === 'development' ? error.message : 'Algo salió mal');
         });
 
-        app.setNotFoundHandler(async (request: FastifyRequest, reply: FastifyReply) => {
-            return reply.code(404).send({
-                success: false,
-                error: 'ERROR',
-                message: 'Ruta no encontrada'
-            });
+        app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) => {
+            reply.code(404).send('Ruta no encontrada');
         });
 
         await app.register(fastifyJwt, {
