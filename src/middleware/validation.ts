@@ -1,7 +1,3 @@
-import { AppError } from '../utils/AppError';
-// import { NextFunction, Request, Response } from 'express';
-import Joi from 'joi';
-
 export const validateRegisterSchema = {
   body: {
     type: 'object',
