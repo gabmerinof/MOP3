@@ -55,8 +55,28 @@ const startServer = async () => {
 
         await app.register(disableCache);
         await app.register(helmet);
-        await app.register(compress, { encodings: ['deflate', 'gzip'], inflateIfDeflated: true });
-        await app.register(cors, { origin: true });
+        await app.register(compress, {
+            encodings: ['deflate', 'gzip'],
+            inflateIfDeflated: true
+        });
+        await app.register(cors, {
+            origin: (origin: any, callback: any) => {
+                if (!origin) return callback(null, true);
+
+                const allowedOrigins = [
+                    'http://localhost:4200'
+                ];
+
+                if (allowedOrigins.indexOf(origin) !== -1) {
+                    callback(null, true);
+                } else {
+                    callback(new Error('No permitido por políticas de CORS' + origin));
+                }
+            },
+            credentials: true,
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'user-id']
+        });
         await app.register(rateLimit, {
             max: 100,
             timeWindow: '15 minutes'
