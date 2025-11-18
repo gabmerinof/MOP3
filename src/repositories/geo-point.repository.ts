@@ -37,7 +37,7 @@ export class GeoPointRepository extends EntityRepository<GeoPoint> {
       paramCount++;
       query += ` AND gp.type = ?`;
       params.push(type);
-    }
+    } 
 
     query += ` ORDER BY distance ASC`;
 
