@@ -38,8 +38,11 @@ export class GeoPointService {
   }
 
   async findAll(filter?: ProximityFilter): Promise<GeoPoint[] | undefined> {
-    if (filter)
+    console.log(filter);
+    if (filter){
+      console.log(filter)
       return this.getRepository().findWithProximity(filter);
+    }
 
     return this.getRepository().findAllWithUser();
   }
